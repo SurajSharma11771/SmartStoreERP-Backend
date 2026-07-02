@@ -15,6 +15,9 @@ public class UpdateProductRequest {
     @NotBlank(message = "Product name is required")
     private String name;
 
+    @NotBlank(message = "SKU is required")
+    private String sku;
+
     private String barcode;
     private String description;
 

@@ -107,6 +107,7 @@ public ProductResponse updateProduct(Long id, UpdateProductRequest request) {
             .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
     product.setName(request.getName());
+    product.setSku(request.getSku());
     product.setBarcode(request.getBarcode());
     product.setDescription(request.getDescription());
     product.setSellingPrice(request.getSellingPrice());
