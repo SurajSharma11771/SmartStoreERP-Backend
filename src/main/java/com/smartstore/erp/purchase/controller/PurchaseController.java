@@ -42,4 +42,14 @@ public ApiResponse<PurchaseDetailsResponse> getPurchaseById(@PathVariable Long i
             purchaseService.getPurchaseById(id)
     );
 }
+@DeleteMapping("/{id}")
+public ApiResponse<String> deletePurchase(@PathVariable Long id) {
+
+    purchaseService.deletePurchase(id);
+
+    return ApiResponse.success(
+            "Purchase deleted successfully",
+            "OK"
+    );
+}
 }

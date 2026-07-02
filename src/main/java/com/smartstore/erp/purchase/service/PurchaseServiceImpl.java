@@ -18,7 +18,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import com.smartstore.erp.purchase.dto.PurchaseResponse;
 import java.util.List;
-
+import org.springframework.transaction.annotation.Transactional;
 import com.smartstore.erp.purchase.dto.PurchaseDetailsResponse;
 import com.smartstore.erp.purchase.dto.PurchaseItemResponse;
 
@@ -120,6 +120,26 @@ public List<PurchaseResponse> getAllPurchases() {
                     .build())
             .toList();
 }
+@Override
+@Transactional
+public void deletePurchase(Long id) {
+
+    Purchase purchase = purchaseRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Purchase not found"));
+
+    List<PurchaseItem> items = purchaseItemRepository.findByPurchaseId(id);
+
+    for (PurchaseItem item : items) {
+        Product product = item.getProduct();
+        product.setQuantity(product.getQuantity() - item.getQuantity());
+        productRepository.save(product);
+    }
+
+    purchaseItemRepository.deleteByPurchaseId(id);
+
+    purchaseRepository.delete(purchase);
+}
+
 
 
 

@@ -9,4 +9,5 @@ public interface PurchaseService {
     String createPurchase(PurchaseRequest request);
     List<PurchaseResponse> getAllPurchases();
     PurchaseDetailsResponse getPurchaseById(Long id);
+    void deletePurchase(Long id);
 }
