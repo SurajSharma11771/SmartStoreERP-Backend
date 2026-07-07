@@ -9,4 +9,5 @@ public interface PurchaseItemRepository extends JpaRepository<PurchaseItem, Long
 
     List<PurchaseItem> findByPurchaseId(Long purchaseId);
     void deleteByPurchaseId(Long purchaseId);
+    List<PurchaseItem> findByProductId(Long productId);
 }

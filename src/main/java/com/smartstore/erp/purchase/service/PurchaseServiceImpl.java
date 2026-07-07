@@ -13,7 +13,9 @@ import com.smartstore.erp.supplier.entity.Supplier;
 import com.smartstore.erp.supplier.repository.SupplierRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
+import com.smartstore.erp.purchase.dto.PurchaseReturnRequest;
+import com.smartstore.erp.purchase.entity.PurchaseReturn;
+import com.smartstore.erp.purchase.repository.PurchaseReturnRepository;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import com.smartstore.erp.purchase.dto.PurchaseResponse;
@@ -30,6 +32,7 @@ public class PurchaseServiceImpl implements PurchaseService {
     private final PurchaseItemRepository purchaseItemRepository;
     private final SupplierRepository supplierRepository;
     private final ProductRepository productRepository;
+    private final PurchaseReturnRepository purchaseReturnRepository;
 
     @Override
     public String createPurchase(PurchaseRequest request) {
@@ -139,7 +142,35 @@ public void deletePurchase(Long id) {
 
     purchaseRepository.delete(purchase);
 }
+@Override
+@Transactional
+public String returnPurchase(PurchaseReturnRequest request) {
 
+    Purchase purchase = purchaseRepository.findById(request.getPurchaseId())
+            .orElseThrow(() -> new ResourceNotFoundException("Purchase not found"));
+
+    Product product = productRepository.findById(request.getProductId())
+            .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+
+    if (product.getQuantity() < request.getQuantity()) {
+        throw new RuntimeException("Cannot return more than current stock");
+    }
+
+    product.setQuantity(product.getQuantity() - request.getQuantity());
+    productRepository.save(product);
+
+    PurchaseReturn purchaseReturn = PurchaseReturn.builder()
+            .purchase(purchase)
+            .product(product)
+            .quantity(request.getQuantity())
+            .reason(request.getReason())
+            .returnDate(LocalDateTime.now())
+            .build();
+
+    purchaseReturnRepository.save(purchaseReturn);
+
+    return "Purchase return completed successfully";
+}
 
 
 

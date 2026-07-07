@@ -3,7 +3,7 @@ package com.smartstore.erp.purchase.controller;
 import com.smartstore.erp.common.ApiResponse;
 import com.smartstore.erp.purchase.dto.PurchaseRequest;
 import com.smartstore.erp.purchase.service.PurchaseService;
-
+import com.smartstore.erp.purchase.dto.PurchaseReturnRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -50,6 +50,13 @@ public ApiResponse<String> deletePurchase(@PathVariable Long id) {
     return ApiResponse.success(
             "Purchase deleted successfully",
             "OK"
+    );
+}
+@PostMapping("/return")
+public ApiResponse<String> returnPurchase(@RequestBody PurchaseReturnRequest request) {
+    return ApiResponse.success(
+            "Purchase return completed successfully",
+            purchaseService.returnPurchase(request)
     );
 }
 }
