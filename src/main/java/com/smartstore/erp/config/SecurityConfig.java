@@ -15,7 +15,9 @@ import java.util.List;
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http
+    ) throws Exception {
 
         http
                 .cors(Customizer.withDefaults())
@@ -32,22 +34,36 @@ public class SecurityConfig {
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration config = new CorsConfiguration();
+        CorsConfiguration config =
+                new CorsConfiguration();
 
         config.setAllowedOrigins(List.of(
-        "http://localhost:5173",
-        "https://smart-store-erp-frontend.vercel.app",
-        "https://smartstoreerp-frontend.vercel.app",
-        "https://smartstoreerp-frontend.onrender.com"
-));
+                "http://localhost:5173",
+                "https://smart-store-erp-frontend.vercel.app",
+                "https://smartstoreerp-frontend.vercel.app",
+                "https://smartstoreerp-frontend.onrender.com"
+        ));
 
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedMethods(List.of(
+                "GET",
+                "POST",
+                "PUT",
+                "PATCH",
+                "DELETE",
+                "OPTIONS"
+        ));
+
         config.setAllowedHeaders(List.of("*"));
         config.setExposedHeaders(List.of("Authorization"));
         config.setAllowCredentials(true);
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
+
+        source.registerCorsConfiguration(
+                "/**",
+                config
+        );
 
         return source;
     }

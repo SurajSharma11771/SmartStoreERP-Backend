@@ -7,11 +7,14 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import java.util.HashMap;
 import java.util.Map;
-
+import com.smartstore.erp.exception.ProductInUseException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import com.smartstore.erp.common.ApiResponse;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+    
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
 public ResponseEntity<ApiResponse<Object>> handleValidationErrors(MethodArgumentNotValidException ex) {
@@ -31,5 +34,17 @@ public ResponseEntity<ApiResponse<Object>> handleDuplicateResource(DuplicateReso
     return ResponseEntity
             .status(HttpStatus.CONFLICT)
             .body(ApiResponse.error(ex.getMessage()));
+}
+@ExceptionHandler(ProductInUseException.class)
+public ResponseEntity<ApiResponse<Object>> handleProductInUse(
+        ProductInUseException exception
+) {
+    return ResponseEntity
+            .status(HttpStatus.CONFLICT)
+            .body(
+                    ApiResponse.error(
+                            exception.getMessage()
+                    )
+            );
 }
 }

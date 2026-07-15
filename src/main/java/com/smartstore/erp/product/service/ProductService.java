@@ -8,13 +8,27 @@ import java.util.List;
 
 public interface ProductService {
 
-    ProductResponse createProduct(CreateProductRequest request);
+    ProductResponse createProduct(
+            CreateProductRequest request
+    );
 
     List<ProductResponse> getAllProducts();
+
     ProductResponse getProductById(Long id);
-    ProductResponse updateProduct(Long id, UpdateProductRequest request);
+
+    ProductResponse updateProduct(
+            Long id,
+            UpdateProductRequest request
+    );
+
     void deleteProduct(Long id);
+
+    ProductResponse updateProductStatus(
+            Long id,
+            Boolean active
+    );
+
     List<ProductResponse> searchProducts(String keyword);
 
-List<ProductResponse> getLowStockProducts();
+    List<ProductResponse> getLowStockProducts();
 }
