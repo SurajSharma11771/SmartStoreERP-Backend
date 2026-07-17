@@ -32,6 +32,10 @@ public class ProductResponse {
     private Integer quantity;
 
     private Integer minimumStock;
+    
+    private Long categoryId;
+
+    private String categoryName;
 
     private Boolean status;
 }

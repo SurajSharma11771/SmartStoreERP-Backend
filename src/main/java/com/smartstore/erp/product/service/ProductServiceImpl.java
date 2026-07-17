@@ -1,17 +1,16 @@
 package com.smartstore.erp.product.service;
 
+import com.smartstore.erp.category.entity.Category;
+import com.smartstore.erp.category.repository.CategoryRepository;
 import com.smartstore.erp.exception.DuplicateResourceException;
 import com.smartstore.erp.exception.ProductInUseException;
 import com.smartstore.erp.exception.ResourceNotFoundException;
-
 import com.smartstore.erp.inventory.repository.StockAdjustmentRepository;
-
 import com.smartstore.erp.product.dto.CreateProductRequest;
 import com.smartstore.erp.product.dto.ProductResponse;
 import com.smartstore.erp.product.dto.UpdateProductRequest;
 import com.smartstore.erp.product.entity.Product;
 import com.smartstore.erp.product.repository.ProductRepository;
-
 import com.smartstore.erp.purchase.repository.PurchaseItemRepository;
 import com.smartstore.erp.sale.repository.SaleItemRepository;
 
@@ -28,6 +27,7 @@ import java.util.List;
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
+    private final CategoryRepository categoryRepository;
     private final SaleItemRepository saleItemRepository;
     private final PurchaseItemRepository purchaseItemRepository;
     private final StockAdjustmentRepository stockAdjustmentRepository;
@@ -55,6 +55,9 @@ public class ProductServiceImpl implements ProductService {
             );
         }
 
+        Category category =
+                findCategoryById(request.getCategoryId());
+
         Product product = Product.builder()
                 .name(request.getName())
                 .sku(request.getSku())
@@ -64,6 +67,7 @@ public class ProductServiceImpl implements ProductService {
                 .costPrice(request.getCostPrice())
                 .quantity(request.getQuantity())
                 .minimumStock(request.getMinimumStock())
+                .category(category)
                 .status(true)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
@@ -86,6 +90,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductResponse getProductById(Long id) {
         Product product = findProductById(id);
+
         return mapToResponse(product);
     }
 
@@ -97,6 +102,9 @@ public class ProductServiceImpl implements ProductService {
     ) {
         Product product = findProductById(id);
 
+        Category category =
+                findCategoryById(request.getCategoryId());
+
         product.setName(request.getName());
         product.setSku(request.getSku());
         product.setBarcode(request.getBarcode());
@@ -105,11 +113,8 @@ public class ProductServiceImpl implements ProductService {
         product.setCostPrice(request.getCostPrice());
         product.setQuantity(request.getQuantity());
         product.setMinimumStock(request.getMinimumStock());
+        product.setCategory(category);
 
-        /*
-         * Edit request me status null aaye toh existing
-         * status ko preserve karenge.
-         */
         if (request.getStatus() != null) {
             product.setStatus(request.getStatus());
         }
@@ -122,41 +127,44 @@ public class ProductServiceImpl implements ProductService {
         return mapToResponse(updatedProduct);
     }
 
-   @Override
-@Transactional
-public void deleteProduct(Long id) {
-    Product product = findProductById(id);
+    @Override
+    @Transactional
+    public void deleteProduct(Long id) {
+        Product product = findProductById(id);
 
-    boolean usedInSales =
-            saleItemRepository.existsByProductId(id);
+        boolean usedInSales =
+                saleItemRepository.existsByProductId(id);
 
-    boolean usedInPurchases =
-            purchaseItemRepository.existsByProductId(id);
+        boolean usedInPurchases =
+                purchaseItemRepository.existsByProductId(id);
 
-    boolean usedInAdjustments =
-            stockAdjustmentRepository.existsByProductId(id);
+        boolean usedInAdjustments =
+                stockAdjustmentRepository.existsByProductId(id);
 
-    if (usedInSales) {
-        throw new ProductInUseException(
-                "Product is used in sales history. Deactivate it instead."
-        );
+        if (usedInSales) {
+            throw new ProductInUseException(
+                    "Product is used in sales history. " +
+                    "Deactivate it instead."
+            );
+        }
+
+        if (usedInPurchases) {
+            throw new ProductInUseException(
+                    "Product is used in purchase history. " +
+                    "Deactivate it instead."
+            );
+        }
+
+        if (usedInAdjustments) {
+            throw new ProductInUseException(
+                    "Product is used in stock adjustment history. " +
+                    "Deactivate it instead."
+            );
+        }
+
+        productRepository.delete(product);
+        productRepository.flush();
     }
-
-    if (usedInPurchases) {
-        throw new ProductInUseException(
-                "Product is used in purchase history. Deactivate it instead."
-        );
-    }
-
-    if (usedInAdjustments) {
-        throw new ProductInUseException(
-                "Product is used in stock adjustment history. Deactivate it instead."
-        );
-    }
-
-    productRepository.delete(product);
-    productRepository.flush();
-}
 
     @Override
     @Transactional
@@ -191,7 +199,9 @@ public void deleteProduct(Long id) {
         return productRepository.findAll()
                 .stream()
                 .filter(product ->
-                        Boolean.TRUE.equals(product.getStatus())
+                        Boolean.TRUE.equals(
+                                product.getStatus()
+                        )
                 )
                 .filter(product ->
                         product.getQuantity() <=
@@ -210,6 +220,15 @@ public void deleteProduct(Long id) {
                 );
     }
 
+    private Category findCategoryById(Long id) {
+        return categoryRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Category not found"
+                        )
+                );
+    }
+
     private ProductResponse mapToResponse(
             Product product
     ) {
@@ -223,6 +242,16 @@ public void deleteProduct(Long id) {
                 .costPrice(product.getCostPrice())
                 .quantity(product.getQuantity())
                 .minimumStock(product.getMinimumStock())
+                .categoryId(
+                        product.getCategory() != null
+                                ? product.getCategory().getId()
+                                : null
+                )
+                .categoryName(
+                        product.getCategory() != null
+                                ? product.getCategory().getName()
+                                : null
+                )
                 .status(product.getStatus())
                 .build();
     }

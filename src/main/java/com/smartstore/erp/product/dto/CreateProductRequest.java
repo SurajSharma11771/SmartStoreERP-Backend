@@ -37,4 +37,7 @@ public class CreateProductRequest {
     @NotNull
     @Min(0)
     private Integer minimumStock;
+    
+    @NotNull(message = "Category is required")
+    private Long categoryId;
 }

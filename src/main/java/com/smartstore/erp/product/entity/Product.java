@@ -5,7 +5,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-
+import com.smartstore.erp.category.entity.Category;
 @Getter
 @Setter
 @NoArgsConstructor
@@ -41,6 +41,10 @@ public class Product {
 
     @Column(name = "minimum_stock", nullable = false)
     private Integer minimumStock;
+
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private Category category;
 
     @Column(nullable = false)
     private Boolean status;
